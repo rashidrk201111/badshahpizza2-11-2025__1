@@ -260,7 +260,7 @@ export function KOT() {
         payment_status: 'unpaid',
         user_id: user?.id,
         order_type: kot.order_type,
-        table_number: kot.table_number,
+        kot_id: kot.id,
         created_at: new Date().toISOString()
       };
 
