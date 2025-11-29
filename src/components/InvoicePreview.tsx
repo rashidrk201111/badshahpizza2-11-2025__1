@@ -34,6 +34,10 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoice, items, 
 
   useEffect(() => {
     loadCompanyProfile();
+    console.log('Invoice data:', invoice);
+    console.log('Discount value:', invoice.discount);
+    console.log('Discount type:', typeof invoice.discount);
+    console.log('Discount as number:', Number(invoice.discount));
   }, []);
 
   const loadCompanyProfile = async () => {
@@ -226,7 +230,7 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoice, items, 
                 <span>Subtotal:</span>
                 <span>₹{invoice.subtotal.toFixed(2)}</span>
               </div>
-              {invoice.discount && Number(invoice.discount) > 0 && (
+              {Number(invoice.discount || 0) > 0 && (
                 <div style={{
                   display: 'flex',
                   justifyContent: 'space-between',
