@@ -226,7 +226,7 @@ export function KOT() {
         const { error: itemsError } = await supabase.from('kot_items').insert(kotItems);
         if (itemsError) throw itemsError;
 
-        await createInvoiceForKOT(kot);
+        await createInvoiceForKOT(kot, selectedItems);
       }
 
       resetForm();
@@ -244,9 +244,10 @@ export function KOT() {
     return data;
   };
 
-  const createInvoiceForKOT = async (kot: any) => {
+  const createInvoiceForKOT = async (kot: any, items: typeof selectedItems) => {
     try {
-      const subtotal = calculateTotal();
+      // Calculate subtotal from items
+      const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
       const discount = parseFloat(formData.discount?.toString() || '0');
       const afterDiscount = subtotal - discount;
       const taxRate = 0.05;
@@ -286,7 +287,7 @@ export function KOT() {
 
       if (invoiceError) throw invoiceError;
 
-      const invoiceItems = selectedItems.map(item => ({
+      const invoiceItems = items.map(item => ({
         invoice_id: invoice.id,
         menu_item_id: item.menu_item_id,
         menu_item_name: item.menu_item_name || 'Menu Item',
@@ -342,7 +343,24 @@ export function KOT() {
         setShowInvoicePreview(true);
       } else {
         // If no invoice exists, create one first
-        const invoice = await createInvoiceForKOT(kot);
+        // Fetch KOT items from database
+        const { data: kotItems, error: kotItemsError } = await supabase
+          .from('kot_items')
+          .select('*')
+          .eq('kot_id', kot.id);
+
+        if (kotItemsError) throw kotItemsError;
+
+        // Convert KOT items to the format expected by createInvoiceForKOT
+        const items = kotItems.map(item => ({
+          menu_item_id: item.menu_item_id,
+          menu_item_name: item.menu_item_name,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          notes: item.notes
+        }));
+
+        const invoice = await createInvoiceForKOT(kot, items);
         setCurrentInvoice({
           ...invoice,
           customer_name: kot.customer_name,
