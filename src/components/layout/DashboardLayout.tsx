@@ -41,6 +41,7 @@ const navItems: NavItem[] = [
   { name: 'Collection Report', icon: Wallet, path: 'collection-report', roles: ['admin'] },
   { name: 'Invoices', icon: FileText, path: 'invoices', roles: ['admin', 'sales_person'] },
   { name: 'Payment Receivables', icon: Receipt, path: 'receivables', roles: ['admin'] },
+  { name: 'Reports', icon: BarChart3, path: 'reports', roles: ['admin'] },
   { name: 'Customers', icon: Users, path: 'customers', roles: ['admin'] },
   { name: 'Suppliers', icon: Truck, path: 'suppliers', roles: ['admin', 'purchase_person', 'inventory_person'] },
   { name: 'Purchases', icon: ShoppingCart, path: 'purchases', roles: ['admin', 'purchase_person', 'inventory_person'] },

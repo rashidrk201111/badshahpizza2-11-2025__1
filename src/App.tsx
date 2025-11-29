@@ -12,6 +12,7 @@ import { Customers } from './components/views/Customers';
 import { Accounting } from './components/views/Accounting';
 import { CompanyProfile } from './components/views/CompanyProfile';
 import { PaymentReceivables } from './components/views/PaymentReceivables';
+import { Reports } from './components/views/Reports';
 import { Suppliers } from './components/views/Suppliers';
 import { Purchases } from './components/views/Purchases';
 import { ManageProfile } from './components/views/ManageProfile';
@@ -61,6 +62,8 @@ function AppContent() {
             return <Accounting />;
           case 'receivables':
             return <PaymentReceivables />;
+          case 'reports':
+            return <Reports />;
           case 'suppliers':
             return <Suppliers />;
           case 'purchases':
