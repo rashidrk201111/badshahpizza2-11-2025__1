@@ -31,6 +31,8 @@ interface InvoicePreviewProps {
 
 export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoice, items, onClose }) => {
   const [companyProfile, setCompanyProfile] = useState<any>(null);
+  const [taxName, setTaxName] = useState('GST');
+  const [taxRate, setTaxRate] = useState(5);
 
   useEffect(() => {
     loadCompanyProfile();
@@ -45,6 +47,11 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoice, items, 
 
       if (error) throw error;
       setCompanyProfile(data);
+
+      if (data) {
+        setTaxName(data.tax_name || 'GST');
+        setTaxRate(data.default_tax_rate || 5);
+      }
     } catch (error) {
       console.error('Error loading company profile:', error);
     }
@@ -246,7 +253,7 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoice, items, 
                 fontSize: '13px',
                 fontWeight: '700'
               }}>
-                <span>Tax (5%):</span>
+                <span>{taxName} ({taxRate}%):</span>
                 <span>₹{invoice.tax.toFixed(2)}</span>
               </div>
               <div style={{

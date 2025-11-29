@@ -45,6 +45,9 @@ export default function Menu() {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [showBillingSection, setShowBillingSection] = useState(false);
   const [billItems, setBillItems] = useState<BillItem[]>([]);
+  const [taxRate, setTaxRate] = useState(0.05);
+  const [taxName, setTaxName] = useState('GST');
+  const [enableTax, setEnableTax] = useState(true);
   const [billForm, setBillForm] = useState({
     customer_name: '',
     customer_phone: '',
@@ -78,7 +81,27 @@ export default function Menu() {
 
   useEffect(() => {
     loadData();
+    loadTaxConfig();
   }, []);
+
+  const loadTaxConfig = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('company_profile')
+        .select('default_tax_rate, tax_name, enable_tax')
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (data) {
+        setTaxRate((data.default_tax_rate || 5) / 100);
+        setTaxName(data.tax_name || 'GST');
+        setEnableTax(data.enable_tax !== false);
+      }
+    } catch (error) {
+      console.error('Error loading tax config:', error);
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -254,7 +277,7 @@ export default function Menu() {
 
   const calculateBillTotals = () => {
     const subtotal = billItems.reduce((sum, item) => sum + item.quantity * item.unit_price, 0);
-    const taxAmount = subtotal * 0.05;
+    const taxAmount = enableTax ? subtotal * taxRate : 0;
     const total = subtotal + taxAmount;
     return { subtotal, taxAmount, total };
   };
@@ -754,7 +777,7 @@ export default function Menu() {
                 <span className="font-medium">{formatINR(calculateBillTotals().subtotal)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span>Tax (5%):</span>
+                <span>{taxName} ({(taxRate * 100).toFixed(2)}%):</span>
                 <span className="font-medium">{formatINR(calculateBillTotals().taxAmount)}</span>
               </div>
               <div className="flex justify-between text-lg font-bold border-t pt-2">

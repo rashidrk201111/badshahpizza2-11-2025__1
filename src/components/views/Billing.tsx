@@ -39,6 +39,9 @@ export function Billing() {
   const [showModal, setShowModal] = useState(false);
   const [editingBill, setEditingBill] = useState<Bill | null>(null);
   const [selectedItems, setSelectedItems] = useState<BillItem[]>([]);
+  const [taxRate, setTaxRate] = useState(0.05);
+  const [taxName, setTaxName] = useState('GST');
+  const [enableTax, setEnableTax] = useState(true);
   const [formData, setFormData] = useState({
     customer_name: '',
     customer_phone: '',
@@ -50,7 +53,27 @@ export function Billing() {
 
   useEffect(() => {
     loadData();
+    loadTaxConfig();
   }, []);
+
+  const loadTaxConfig = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('company_profile')
+        .select('default_tax_rate, tax_name, enable_tax')
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (data) {
+        setTaxRate((data.default_tax_rate || 5) / 100);
+        setTaxName(data.tax_name || 'GST');
+        setEnableTax(data.enable_tax !== false);
+      }
+    } catch (error) {
+      console.error('Error loading tax config:', error);
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -122,7 +145,7 @@ export function Billing() {
       (sum, item) => sum + item.quantity * item.unit_price,
       0
     );
-    const taxAmount = subtotal * 0.05;
+    const taxAmount = enableTax ? subtotal * taxRate : 0;
     const total = subtotal + taxAmount;
     return { subtotal, taxAmount, total };
   };
@@ -423,7 +446,7 @@ export function Billing() {
               <span>${formatINR(bill.subtotal)}</span>
             </div>
             <div>
-              <span>Tax (5%):</span>
+              <span>{taxName} ({(taxRate * 100).toFixed(2)}%):</span>
               <span>${formatINR(bill.tax_amount)}</span>
             </div>
             <div class="grand-total">
@@ -761,7 +784,7 @@ export function Billing() {
                     <span className="font-medium text-slate-900">{formatINR(subtotal)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-600">Tax (5%):</span>
+                    <span className="text-slate-600">{taxName} ({(taxRate * 100).toFixed(2)}%):</span>
                     <span className="font-medium text-slate-900">{formatINR(taxAmount)}</span>
                   </div>
                   <div className="flex justify-between text-lg font-bold border-t border-slate-300 pt-2">
