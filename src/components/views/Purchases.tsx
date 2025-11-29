@@ -52,6 +52,7 @@ export function Purchases() {
   const [dateFilter, setDateFilter] = useState<'all' | 'today' | 'week' | 'month' | 'year'>('all');
   const [showModal, setShowModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(null);
   const [companyState, setCompanyState] = useState<string>('');
   const [selectedItems, setSelectedItems] = useState<PurchaseItem[]>([]);
@@ -905,9 +906,12 @@ export function Purchases() {
                               <Printer className="w-4 h-4" />
                             </button>
                             <button
-                              onClick={() => toggleRow(purchase.id)}
+                              onClick={() => {
+                                setSelectedPurchase(purchase);
+                                setShowPreviewModal(true);
+                              }}
                               className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
-                              title="View Details"
+                              title="View PO"
                             >
                               <Eye className="w-4 h-4" />
                             </button>
@@ -1408,6 +1412,124 @@ export function Purchases() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* PO Preview Modal */}
+      {showPreviewModal && selectedPurchase && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h2 className="text-lg font-semibold">Purchase Order Preview</h2>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handlePrintPO(selectedPurchase)}
+                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition flex items-center gap-2"
+                >
+                  <Printer className="w-4 h-4" />
+                  Print
+                </button>
+                <button
+                  onClick={() => {
+                    setShowPreviewModal(false);
+                    setSelectedPurchase(null);
+                  }}
+                  className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-sm font-medium rounded-lg transition"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="max-w-3xl mx-auto">
+                <h1 className="text-2xl font-bold text-center mb-6">PURCHASE ORDER</h1>
+
+                <div className="mb-6 space-y-2">
+                  <div className="flex gap-2">
+                    <span className="font-semibold">PO Number:</span>
+                    <span>{selectedPurchase.purchase_number}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <span className="font-semibold">Order Date:</span>
+                    <span>{new Date(selectedPurchase.order_date).toLocaleDateString('en-IN')}</span>
+                  </div>
+                  {selectedPurchase.expected_date && (
+                    <div className="flex gap-2">
+                      <span className="font-semibold">Expected Date:</span>
+                      <span>{new Date(selectedPurchase.expected_date).toLocaleDateString('en-IN')}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="mb-6">
+                  <div className="flex gap-2">
+                    <span className="font-semibold">Supplier:</span>
+                    <span>{selectedPurchase.supplier?.name || 'N/A'}</span>
+                  </div>
+                </div>
+
+                <table className="w-full border-collapse border border-slate-300">
+                  <thead>
+                    <tr className="bg-slate-100">
+                      <th className="border border-slate-300 px-4 py-2 text-left">Sr. No.</th>
+                      <th className="border border-slate-300 px-4 py-2 text-left">Product Name</th>
+                      <th className="border border-slate-300 px-4 py-2 text-left">SKU</th>
+                      <th className="border border-slate-300 px-4 py-2 text-center">Quantity</th>
+                      <th className="border border-slate-300 px-4 py-2 text-right">Unit Price</th>
+                      <th className="border border-slate-300 px-4 py-2 text-center">GST %</th>
+                      <th className="border border-slate-300 px-4 py-2 text-right">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {((selectedPurchase as any).items || []).map((item: any, index: number) => (
+                      <tr key={index}>
+                        <td className="border border-slate-300 px-4 py-2 text-center">{index + 1}</td>
+                        <td className="border border-slate-300 px-4 py-2">{item.product_name}</td>
+                        <td className="border border-slate-300 px-4 py-2">{item.sku}</td>
+                        <td className="border border-slate-300 px-4 py-2 text-center">{item.quantity} {item.unit}</td>
+                        <td className="border border-slate-300 px-4 py-2 text-right">{formatINR(item.unit_price)}</td>
+                        <td className="border border-slate-300 px-4 py-2 text-center">{item.gst_rate}%</td>
+                        <td className="border border-slate-300 px-4 py-2 text-right">{formatINR(item.total)}</td>
+                      </tr>
+                    ))}
+                    <tr className="bg-slate-50 font-semibold">
+                      <td colSpan={6} className="border border-slate-300 px-4 py-2 text-right">Subtotal:</td>
+                      <td className="border border-slate-300 px-4 py-2 text-right">{formatINR((selectedPurchase as any).subtotal)}</td>
+                    </tr>
+                    {(selectedPurchase as any).cgst > 0 && (
+                      <>
+                        <tr>
+                          <td colSpan={6} className="border border-slate-300 px-4 py-2 text-right">CGST:</td>
+                          <td className="border border-slate-300 px-4 py-2 text-right">{formatINR((selectedPurchase as any).cgst)}</td>
+                        </tr>
+                        <tr>
+                          <td colSpan={6} className="border border-slate-300 px-4 py-2 text-right">SGST:</td>
+                          <td className="border border-slate-300 px-4 py-2 text-right">{formatINR((selectedPurchase as any).sgst)}</td>
+                        </tr>
+                      </>
+                    )}
+                    {(selectedPurchase as any).igst > 0 && (
+                      <tr>
+                        <td colSpan={6} className="border border-slate-300 px-4 py-2 text-right">IGST:</td>
+                        <td className="border border-slate-300 px-4 py-2 text-right">{formatINR((selectedPurchase as any).igst)}</td>
+                      </tr>
+                    )}
+                    <tr className="bg-slate-100 font-bold">
+                      <td colSpan={6} className="border border-slate-300 px-4 py-2 text-right">Grand Total:</td>
+                      <td className="border border-slate-300 px-4 py-2 text-right">{formatINR(selectedPurchase.total)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                {(selectedPurchase as any).notes && (
+                  <div className="mt-6">
+                    <div className="font-semibold mb-2">Notes:</div>
+                    <div className="text-slate-600">{(selectedPurchase as any).notes}</div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
