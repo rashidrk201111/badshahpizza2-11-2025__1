@@ -34,10 +34,6 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoice, items, 
 
   useEffect(() => {
     loadCompanyProfile();
-    console.log('Invoice data:', invoice);
-    console.log('Discount value:', invoice.discount);
-    console.log('Discount type:', typeof invoice.discount);
-    console.log('Discount as number:', Number(invoice.discount));
   }, []);
 
   const loadCompanyProfile = async () => {
