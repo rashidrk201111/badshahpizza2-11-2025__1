@@ -253,7 +253,14 @@ export function KOT() {
       const tax = afterDiscount * taxRate;
       const total = afterDiscount + tax;
 
+      // Calculate due date - default to current date for walk-in orders
+      const dueDate = new Date();
+
+      // Generate invoice number based on KOT number
+      const invoiceNumber = `INV-${kot.kot_number || new Date().getTime()}`;
+
       const invoiceData = {
+        invoice_number: invoiceNumber,
         customer_id: null,
         customer_name: kot.customer_name || 'Walk-in Customer',
         customer_phone: kot.customer_phone || null,
@@ -264,6 +271,7 @@ export function KOT() {
         total,
         status: 'draft',
         payment_status: 'unpaid',
+        due_date: dueDate.toISOString().split('T')[0],
         user_id: user?.id,
         order_type: kot.order_type,
         kot_id: kot.id,
