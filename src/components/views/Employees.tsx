@@ -82,47 +82,29 @@ export function Employees() {
         }
 
         const { data: { session } } = await supabase.auth.getSession();
-        const currentSession = session;
 
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: formData.email,
-          password: formData.password,
+        const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-employee`;
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session?.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password,
+            full_name: formData.full_name,
+            role: formData.role,
+            phone: formData.phone,
+            is_active: formData.is_active,
+            created_by: profile?.id,
+          }),
         });
 
-        if (authError) throw authError;
+        const result = await response.json();
 
-        if (authData.user) {
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .insert({
-              id: authData.user.id,
-              email: formData.email,
-              full_name: formData.full_name,
-              role: formData.role,
-            });
-
-          if (profileError) throw profileError;
-
-          const { error: employeeError } = await supabase
-            .from('employees')
-            .insert({
-              id: authData.user.id,
-              email: formData.email,
-              full_name: formData.full_name,
-              role: formData.role,
-              phone: formData.phone,
-              is_active: formData.is_active,
-              created_by: profile?.id,
-            });
-
-          if (employeeError) throw employeeError;
-
-          if (currentSession) {
-            await supabase.auth.setSession({
-              access_token: currentSession.access_token,
-              refresh_token: currentSession.refresh_token,
-            });
-          }
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to create employee');
         }
 
         setMessage({ type: 'success', text: 'Employee created successfully' });
