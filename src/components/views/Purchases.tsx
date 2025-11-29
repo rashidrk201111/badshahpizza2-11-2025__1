@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Plus, Search, Trash2, Receipt, Clock, CheckCircle, AlertCircle, IndianRupee, ChevronDown, ChevronRight, Printer } from 'lucide-react';
+import { Plus, Search, Trash2, Receipt, Clock, CheckCircle, AlertCircle, IndianRupee, ChevronDown, ChevronRight, Printer, Eye } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { formatINR } from '../../lib/currency';
 import { calculateItemGST } from '../../lib/gst';
@@ -905,22 +905,31 @@ export function Purchases() {
                               <Printer className="w-4 h-4" />
                             </button>
                             {activeTab === 'payables' && (
-                              <button
-                                onClick={() => {
-                                  setSelectedPurchase(purchase);
-                                  setPaymentFormData({
-                                    amount: balance.toString(),
-                                    payment_date: new Date().toISOString().split('T')[0],
-                                    payment_method_id: '',
-                                    reference_number: '',
-                                    notes: '',
-                                  });
-                                  setShowPaymentModal(true);
-                                }}
-                                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition"
-                              >
-                                Add Payment
-                              </button>
+                              <>
+                                <button
+                                  onClick={() => toggleRow(purchase.id)}
+                                  className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                                  title="View Details"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setSelectedPurchase(purchase);
+                                    setPaymentFormData({
+                                      amount: balance.toString(),
+                                      payment_date: new Date().toISOString().split('T')[0],
+                                      payment_method_id: '',
+                                      reference_number: '',
+                                      notes: '',
+                                    });
+                                    setShowPaymentModal(true);
+                                  }}
+                                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition"
+                                >
+                                  Add Payment
+                                </button>
+                              </>
                             )}
                             {purchase.status === 'ordered' && activeTab === 'orders' && (
                               <button
