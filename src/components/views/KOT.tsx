@@ -394,6 +394,22 @@ export function KOT() {
 
       setEditingKOT(kot);
 
+      // Load discount from invoice if it exists
+      let discount = 0;
+      let discountReason = '';
+      if (kot.invoice_id) {
+        const { data: invoice } = await supabase
+          .from('invoices')
+          .select('discount, discount_reason')
+          .eq('id', kot.invoice_id)
+          .single();
+
+        if (invoice) {
+          discount = Number(invoice.discount) || 0;
+          discountReason = invoice.discount_reason || '';
+        }
+      }
+
       // Check if delivery platform is one of the predefined options
       const predefinedPlatforms = ['zomato', 'swiggy', 'jedlo', 'crisf_food'];
       const isCustomPlatform = kot.delivery_platform && !predefinedPlatforms.includes(kot.delivery_platform.toLowerCase());
@@ -411,6 +427,8 @@ export function KOT() {
         cash_amount: (kot as any).cash_amount?.toString() || '',
         upi_amount: (kot as any).upi_amount?.toString() || '',
         card_amount: (kot as any).card_amount?.toString() || '',
+        discount: discount,
+        discount_reason: discountReason,
       });
       setSelectedItems(items || []);
       setShowModal(true);
