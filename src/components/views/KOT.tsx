@@ -487,7 +487,7 @@ export function KOT() {
               padding: 5mm;
               font-size: 14px;
               line-height: 1.4;
-              font-weight: 600;
+              font-weight: 800;
             }
             .header {
               text-align: center;
@@ -498,14 +498,14 @@ export function KOT() {
             .header h1 {
               font-size: 24px;
               margin-bottom: 5px;
-              font-weight: 700;
+              font-weight: 800;
             }
             .order-type-badge {
               display: inline-block;
               padding: 12px 24px;
               margin: 10px 0;
               border-radius: 4px;
-              font-weight: 600;
+              font-weight: 800;
               font-size: 24px;
               color: white;
               background-color: ${orderTypeColors[kot.order_type]};
@@ -516,13 +516,13 @@ export function KOT() {
               padding-bottom: 10px;
               border-bottom: 1px dashed #000;
               font-size: 14px;
-              font-weight: 600;
+              font-weight: 800;
             }
             .info div {
               margin-bottom: 3px;
             }
             .info-label {
-              font-weight: 700;
+              font-weight: 800;
               display: inline-block;
               width: 80px;
             }
@@ -538,20 +538,20 @@ export function KOT() {
               border-left: 3px solid #000;
             }
             .item-name {
-              font-weight: 700;
+              font-weight: 800;
               font-size: 16px;
               margin-bottom: 3px;
             }
             .item-qty {
               font-size: 16px;
-              font-weight: 700;
+              font-weight: 800;
             }
             .item-notes {
               font-style: italic;
               font-size: 13px;
               margin-top: 3px;
               color: #666;
-              font-weight: 600;
+              font-weight: 800;
             }
             .footer {
               text-align: center;
@@ -559,13 +559,13 @@ export function KOT() {
               padding-top: 10px;
               border-top: 1px dashed #000;
               font-size: 14px;
-              font-weight: 700;
+              font-weight: 800;
             }
             .timestamp {
               text-align: center;
               font-size: 12px;
               margin-top: 10px;
-              font-weight: 600;
+              font-weight: 800;
             }
             @media print {
               body {
@@ -609,7 +609,7 @@ export function KOT() {
           </div>
 
           <div class="footer">
-            <div style="font-weight: 700;">Total Items: ${items.reduce((sum: number, item: any) => sum + parseFloat(item.quantity), 0)}</div>
+            <div style="font-weight: 800;">Total Items: ${items.reduce((sum: number, item: any) => sum + parseFloat(item.quantity), 0)}</div>
           </div>
 
           <div class="timestamp">
