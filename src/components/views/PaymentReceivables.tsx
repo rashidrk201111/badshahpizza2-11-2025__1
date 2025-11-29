@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Plus, Search, AlertCircle, CheckCircle, Clock, IndianRupee, Calendar, User } from 'lucide-react';
+import { Plus, Search, AlertCircle, CheckCircle, Clock, IndianRupee, Calendar, User, ChevronDown, ChevronRight, History } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { formatINR } from '../../lib/currency';
 
@@ -42,9 +42,10 @@ export function PaymentReceivables() {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState<'all' | 'unpaid' | 'partial' | 'overdue'>('all');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'unpaid' | 'partial' | 'overdue' | 'paid'>('all');
   const [showModal, setShowModal] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [expandedInvoices, setExpandedInvoices] = useState<Set<string>>(new Set());
   const [formData, setFormData] = useState({
     amount: '',
     payment_date: new Date().toISOString().split('T')[0],
@@ -66,8 +67,7 @@ export function PaymentReceivables() {
             *,
             customer:customers(name, phone)
           `)
-          .neq('payment_status', 'paid')
-          .order('due_date', { ascending: true }),
+          .order('due_date', { ascending: false }),
         supabase
           .from('invoice_payments')
           .select(`
@@ -223,18 +223,36 @@ export function PaymentReceivables() {
     }
   };
 
+  const toggleInvoiceExpand = (invoiceId: string) => {
+    setExpandedInvoices(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(invoiceId)) {
+        newSet.delete(invoiceId);
+      } else {
+        newSet.add(invoiceId);
+      }
+      return newSet;
+    });
+  };
+
+  const getInvoicePayments = (invoiceId: string) => {
+    return payments.filter(p => p.invoice_id === invoiceId);
+  };
+
   const filteredInvoices = invoices.filter(invoice => {
     const customerName = invoice.customer?.name || (invoice as any).customer_name || '';
     const matchesSearch =
       invoice.invoice_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customerName.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesFilter = filterStatus === 'all' || invoice.payment_status === filterStatus;
-
-    const isOverdue = new Date(invoice.due_date) < new Date() && invoice.payment_status !== 'paid';
-    const matchesOverdue = filterStatus === 'overdue' ? isOverdue : true;
-
-    return matchesSearch && matchesFilter && matchesOverdue;
+    if (filterStatus === 'all') {
+      return matchesSearch;
+    } else if (filterStatus === 'overdue') {
+      const isOverdue = new Date(invoice.due_date) < new Date() && invoice.payment_status !== 'paid';
+      return matchesSearch && isOverdue;
+    } else {
+      return matchesSearch && invoice.payment_status === filterStatus;
+    }
   });
 
   const totalReceivable = filteredInvoices.reduce((sum, inv) => sum + (inv.total - inv.amount_paid), 0);
@@ -331,6 +349,7 @@ export function PaymentReceivables() {
               <option value="all">All Status</option>
               <option value="unpaid">Unpaid</option>
               <option value="partial">Partial Payment</option>
+              <option value="paid">Paid</option>
               <option value="overdue">Overdue</option>
             </select>
           </div>
@@ -359,53 +378,110 @@ export function PaymentReceivables() {
               <tbody className="divide-y divide-slate-200">
                 {filteredInvoices.map((invoice) => {
                   const balance = invoice.total - invoice.amount_paid;
-                  const isOverdue = new Date(invoice.due_date) < new Date();
+                  const isOverdue = new Date(invoice.due_date) < new Date() && invoice.payment_status !== 'paid';
+                  const invoicePayments = getInvoicePayments(invoice.id);
+                  const isExpanded = expandedInvoices.has(invoice.id);
 
                   return (
-                    <tr key={invoice.id} className={`hover:bg-slate-50 transition ${isOverdue ? 'bg-red-50' : ''}`}>
-                      <td className="px-4 py-3 text-sm font-medium text-slate-900">
-                        {invoice.invoice_number}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-slate-900">
-                        <div>
-                          <div className="font-medium">{invoice.customer?.name || (invoice as any).customer_name || 'Walk-in Customer'}</div>
-                          <div className="text-xs text-slate-500">{invoice.customer?.phone || (invoice as any).customer_phone || '-'}</div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-slate-900">
-                        {new Date(invoice.due_date).toLocaleDateString('en-IN')}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-slate-900 text-right">
-                        {formatINR(invoice.total)}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-green-600 text-right">
-                        {formatINR(invoice.amount_paid)}
-                      </td>
-                      <td className="px-4 py-3 text-sm font-semibold text-orange-600 text-right">
-                        {formatINR(balance)}
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        {getStatusBadge(invoice)}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <button
-                          onClick={() => {
-                            setSelectedInvoice(invoice);
-                            setFormData({
-                              amount: balance.toString(),
-                              payment_date: new Date().toISOString().split('T')[0],
-                              payment_method_id: '',
-                              reference_number: '',
-                              notes: '',
-                            });
-                            setShowModal(true);
-                          }}
-                          className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition"
-                        >
-                          Add Payment
-                        </button>
-                      </td>
-                    </tr>
+                    <>
+                      <tr key={invoice.id} className={`hover:bg-slate-50 transition ${isOverdue ? 'bg-red-50' : ''}`}>
+                        <td className="px-4 py-3 text-sm font-medium text-slate-900">
+                          <div className="flex items-center gap-2">
+                            {invoicePayments.length > 0 && (
+                              <button
+                                onClick={() => toggleInvoiceExpand(invoice.id)}
+                                className="text-slate-400 hover:text-slate-600"
+                              >
+                                {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                              </button>
+                            )}
+                            {invoice.invoice_number}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-slate-900">
+                          <div>
+                            <div className="font-medium">{invoice.customer?.name || (invoice as any).customer_name || 'Walk-in Customer'}</div>
+                            <div className="text-xs text-slate-500">{invoice.customer?.phone || (invoice as any).customer_phone || '-'}</div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-slate-900">
+                          {new Date(invoice.due_date).toLocaleDateString('en-IN')}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-slate-900 text-right">
+                          {formatINR(invoice.total)}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-green-600 text-right">
+                          {formatINR(invoice.amount_paid)}
+                        </td>
+                        <td className="px-4 py-3 text-sm font-semibold text-orange-600 text-right">
+                          {formatINR(balance)}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          {getStatusBadge(invoice)}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {invoice.payment_status !== 'paid' && (
+                            <button
+                              onClick={() => {
+                                setSelectedInvoice(invoice);
+                                setFormData({
+                                  amount: balance.toString(),
+                                  payment_date: new Date().toISOString().split('T')[0],
+                                  payment_method_id: '',
+                                  reference_number: '',
+                                  notes: '',
+                                });
+                                setShowModal(true);
+                              }}
+                              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition"
+                            >
+                              Add Payment
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                      {isExpanded && invoicePayments.length > 0 && (
+                        <tr className="bg-slate-50">
+                          <td colSpan={8} className="px-4 py-4">
+                            <div className="ml-8">
+                              <div className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-3">
+                                <History className="w-4 h-4" />
+                                Payment History ({invoicePayments.length} payments)
+                              </div>
+                              <div className="space-y-2">
+                                {invoicePayments.map((payment) => (
+                                  <div key={payment.id} className="flex items-center justify-between bg-white p-3 rounded-lg border border-slate-200">
+                                    <div className="flex items-center gap-4">
+                                      <div className="bg-green-100 p-2 rounded-lg">
+                                        <IndianRupee className="w-4 h-4 text-green-600" />
+                                      </div>
+                                      <div>
+                                        <div className="font-medium text-slate-900">{formatINR(payment.amount)}</div>
+                                        <div className="text-xs text-slate-500">
+                                          {payment.payment_method?.name || 'Cash'}
+                                          {payment.reference_number && ` • Ref: ${payment.reference_number}`}
+                                        </div>
+                                        {payment.notes && (
+                                          <div className="text-xs text-slate-600 mt-1">{payment.notes}</div>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <div className="text-right">
+                                      <div className="text-sm text-slate-900">
+                                        {new Date(payment.payment_date).toLocaleDateString('en-IN')}
+                                      </div>
+                                      <div className="text-xs text-slate-500">
+                                        {new Date(payment.created_at).toLocaleTimeString('en-IN')}
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </>
                   );
                 })}
               </tbody>
