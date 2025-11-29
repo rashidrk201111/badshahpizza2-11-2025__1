@@ -495,7 +495,7 @@ export function KOT() {
               padding: 5mm;
               font-size: 13px;
               line-height: 1.6;
-              font-weight: 600;
+              font-weight: 700;
               -webkit-font-smoothing: antialiased;
               -moz-osx-font-smoothing: grayscale;
               text-rendering: optimizeLegibility;
@@ -509,14 +509,14 @@ export function KOT() {
             }
             .kot-number {
               font-size: 17px;
-              font-weight: 700;
+              font-weight: 800;
               margin: 8px 0;
               letter-spacing: 1px;
             }
             .header h1 {
               font-size: 20px;
               margin-bottom: 8px;
-              font-weight: 700;
+              font-weight: 800;
               letter-spacing: 0.5px;
             }
             .order-type-badge {
@@ -524,7 +524,7 @@ export function KOT() {
               padding: 10px 20px;
               margin: 10px 0;
               border-radius: 6px;
-              font-weight: 600;
+              font-weight: 700;
               font-size: 18px;
               color: white;
               background-color: ${orderTypeColors[kot.order_type]};
@@ -537,16 +537,16 @@ export function KOT() {
               padding-bottom: 12px;
               border-bottom: 1px solid #ddd;
               font-size: 12px;
-              font-weight: 500;
+              font-weight: 700;
             }
             .info div {
               margin-bottom: 4px;
             }
             .info-label {
-              font-weight: 600;
+              font-weight: 700;
               display: inline-block;
               width: 90px;
-              color: #555;
+              color: #000;
             }
             .items {
               margin-bottom: 12px;
@@ -562,24 +562,24 @@ export function KOT() {
               border-radius: 4px;
             }
             .item-name {
-              font-weight: 700;
+              font-weight: 800;
               font-size: 15px;
               margin-bottom: 6px;
               text-transform: uppercase;
               letter-spacing: 0.5px;
-              color: #212529;
+              color: #000;
             }
             .item-qty {
               font-size: 14px;
-              font-weight: 600;
-              color: #495057;
+              font-weight: 700;
+              color: #000;
             }
             .item-notes {
               font-style: italic;
               font-size: 12px;
               margin-top: 6px;
-              color: #6c757d;
-              font-weight: 500;
+              color: #000;
+              font-weight: 700;
               padding-left: 8px;
               border-left: 2px solid #dee2e6;
             }
@@ -589,14 +589,14 @@ export function KOT() {
               padding-top: 12px;
               border-top: 2px double #000;
               font-size: 15px;
-              font-weight: 700;
+              font-weight: 800;
             }
             .timestamp {
               text-align: center;
               font-size: 11px;
               margin-top: 12px;
-              font-weight: 400;
-              color: #6c757d;
+              font-weight: 700;
+              color: #000;
             }
             @media print {
               body {
