@@ -485,8 +485,9 @@ export function KOT() {
               font-family: 'Courier New', monospace;
               width: 80mm;
               padding: 5mm;
-              font-size: 12px;
+              font-size: 14px;
               line-height: 1.4;
+              font-weight: 600;
             }
             .header {
               text-align: center;
@@ -495,8 +496,9 @@ export function KOT() {
               border-bottom: 2px solid #000;
             }
             .header h1 {
-              font-size: 20px;
+              font-size: 24px;
               margin-bottom: 5px;
+              font-weight: 700;
             }
             .order-type-badge {
               display: inline-block;
@@ -513,13 +515,14 @@ export function KOT() {
               margin-bottom: 10px;
               padding-bottom: 10px;
               border-bottom: 1px dashed #000;
-              font-size: 11px;
+              font-size: 14px;
+              font-weight: 600;
             }
             .info div {
               margin-bottom: 3px;
             }
             .info-label {
-              font-weight: bold;
+              font-weight: 700;
               display: inline-block;
               width: 80px;
             }
@@ -535,31 +538,34 @@ export function KOT() {
               border-left: 3px solid #000;
             }
             .item-name {
-              font-weight: bold;
-              font-size: 13px;
+              font-weight: 700;
+              font-size: 16px;
               margin-bottom: 3px;
             }
             .item-qty {
-              font-size: 14px;
-              font-weight: bold;
+              font-size: 16px;
+              font-weight: 700;
             }
             .item-notes {
               font-style: italic;
-              font-size: 11px;
+              font-size: 13px;
               margin-top: 3px;
               color: #666;
+              font-weight: 600;
             }
             .footer {
               text-align: center;
               margin-top: 15px;
               padding-top: 10px;
               border-top: 1px dashed #000;
-              font-size: 11px;
+              font-size: 14px;
+              font-weight: 700;
             }
             .timestamp {
               text-align: center;
-              font-size: 10px;
+              font-size: 12px;
               margin-top: 10px;
+              font-weight: 600;
             }
             @media print {
               body {
@@ -603,7 +609,7 @@ export function KOT() {
           </div>
 
           <div class="footer">
-            <div style="font-weight: bold;">Total Items: ${items.reduce((sum: number, item: any) => sum + parseFloat(item.quantity), 0)}</div>
+            <div style="font-weight: 700;">Total Items: ${items.reduce((sum: number, item: any) => sum + parseFloat(item.quantity), 0)}</div>
           </div>
 
           <div class="timestamp">
