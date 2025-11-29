@@ -17,8 +17,8 @@ Deno.serve(async (req: Request) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         autoRefreshToken: false,
         persistSession: false,
@@ -31,13 +31,13 @@ Deno.serve(async (req: Request) => {
     }
 
     const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-    
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
+
     if (userError || !user) {
       throw new Error('Unauthorized');
     }
 
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('role')
       .eq('id', user.id)
@@ -62,7 +62,7 @@ Deno.serve(async (req: Request) => {
       throw new Error('Missing required fields: email, password, full_name, role');
     }
 
-    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
       email_confirm: true,
@@ -74,7 +74,7 @@ Deno.serve(async (req: Request) => {
 
     if (authError) throw authError;
 
-    const { error: profileError2 } = await supabase
+    const { error: profileError2 } = await supabaseAdmin
       .from('profiles')
       .insert([{
         id: authData.user.id,
@@ -85,7 +85,7 @@ Deno.serve(async (req: Request) => {
 
     if (profileError2) throw profileError2;
 
-    const { error: employeeError } = await supabase
+    const { error: employeeError } = await supabaseAdmin
       .from('employees')
       .insert([{
         id: authData.user.id,
