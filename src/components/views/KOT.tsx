@@ -690,12 +690,29 @@ export function KOT() {
 
       if (itemsError) throw itemsError;
 
+      // Get discount from invoice if it exists
+      let discount = 0;
+      let discountReason = '';
+      if (kot.invoice_id) {
+        const { data: invoice } = await supabase
+          .from('invoices')
+          .select('discount, discount_reason')
+          .eq('id', kot.invoice_id)
+          .maybeSingle();
+
+        if (invoice) {
+          discount = Number(invoice.discount) || 0;
+          discountReason = invoice.discount_reason || '';
+        }
+      }
+
       const subtotal = items.reduce((sum: number, item: any) =>
         sum + (parseFloat(item.quantity) * parseFloat(item.unit_price)), 0
       );
       const taxRate = 0.05;
-      const tax = subtotal * taxRate;
-      const total = subtotal + tax;
+      const subtotalAfterDiscount = subtotal - discount;
+      const tax = subtotalAfterDiscount * taxRate;
+      const total = subtotalAfterDiscount + tax;
 
       const formattedItems = items.map((item: any) => ({
         menu_item_id: item.menu_item_id,
@@ -713,6 +730,8 @@ export function KOT() {
         table_number: kot.table_number,
         order_type: kot.order_type,
         subtotal,
+        discount,
+        discount_reason: discountReason,
         tax,
         total,
         created_at: kot.created_at,
