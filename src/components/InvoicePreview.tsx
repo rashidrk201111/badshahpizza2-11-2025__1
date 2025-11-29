@@ -19,6 +19,8 @@ interface InvoicePreviewProps {
     table_number?: string;
     order_type: 'dine_in' | 'delivery' | 'take_away';
     subtotal: number;
+    discount?: number;
+    discount_reason?: string;
     tax: number;
     total: number;
     created_at: string;
@@ -224,6 +226,19 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoice, items, 
                 <span>Subtotal:</span>
                 <span>₹{invoice.subtotal.toFixed(2)}</span>
               </div>
+              {invoice.discount && invoice.discount > 0 && (
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  marginBottom: '8px',
+                  fontSize: '13px',
+                  fontWeight: '500',
+                  color: '#10b981'
+                }}>
+                  <span>Discount{invoice.discount_reason ? ` (${invoice.discount_reason})` : ''}:</span>
+                  <span>-₹{invoice.discount.toFixed(2)}</span>
+                </div>
+              )}
               <div style={{
                 display: 'flex',
                 justifyContent: 'space-between',

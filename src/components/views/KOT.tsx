@@ -63,6 +63,8 @@ export function KOT() {
     cash_amount: '',
     upi_amount: '',
     card_amount: '',
+    discount: 0,
+    discount_reason: '',
   });
 
   useEffect(() => {
@@ -245,15 +247,19 @@ export function KOT() {
   const createInvoiceForKOT = async (kot: any) => {
     try {
       const subtotal = calculateTotal();
+      const discount = parseFloat(formData.discount?.toString() || '0');
+      const afterDiscount = subtotal - discount;
       const taxRate = 0.05;
-      const tax = subtotal * taxRate;
-      const total = subtotal + tax;
+      const tax = afterDiscount * taxRate;
+      const total = afterDiscount + tax;
 
       const invoiceData = {
         customer_id: null,
         customer_name: kot.customer_name || 'Walk-in Customer',
         customer_phone: kot.customer_phone || null,
         subtotal,
+        discount,
+        discount_reason: formData.discount_reason || null,
         tax,
         total,
         status: 'draft',
@@ -347,13 +353,15 @@ export function KOT() {
   const updateInvoice = async (invoiceId: string) => {
     try {
       const subtotal = calculateTotal();
+      const discount = parseFloat(formData.discount?.toString() || '0');
+      const afterDiscount = subtotal - discount;
       const taxRate = 0.05;
-      const tax = subtotal * taxRate;
-      const total = subtotal + tax;
+      const tax = afterDiscount * taxRate;
+      const total = afterDiscount + tax;
 
       await supabase
         .from('invoices')
-        .update({ subtotal, tax, total })
+        .update({ subtotal, discount, discount_reason: formData.discount_reason || null, tax, total })
         .eq('id', invoiceId);
 
       await supabase.from('invoice_items').delete().eq('invoice_id', invoiceId);
@@ -1235,10 +1243,58 @@ export function KOT() {
                         </div>
                       ))}
                     </div>
-                    <div className="mt-4 pt-4 border-t border-slate-200">
-                      <div className="flex justify-between text-lg font-bold">
+
+                    {/* Discount Section */}
+                    <div className="mt-4 pt-4 border-t border-slate-200 space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">
+                            Discount Amount
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={formData.discount}
+                            onChange={(e) => setFormData({ ...formData, discount: parseFloat(e.target.value) || 0 })}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="0.00"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">
+                            Reason (Optional)
+                          </label>
+                          <input
+                            type="text"
+                            value={formData.discount_reason}
+                            onChange={(e) => setFormData({ ...formData, discount_reason: e.target.value })}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="e.g., Regular customer"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Total Calculations */}
+                    <div className="mt-4 pt-4 border-t border-slate-200 space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-600">Subtotal:</span>
+                        <span className="font-medium">{formatINR(calculateTotal())}</span>
+                      </div>
+                      {formData.discount > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-green-600">Discount:</span>
+                          <span className="font-medium text-green-600">-{formatINR(formData.discount)}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-600">Tax (5%):</span>
+                        <span className="font-medium">{formatINR((calculateTotal() - formData.discount) * 0.05)}</span>
+                      </div>
+                      <div className="flex justify-between text-lg font-bold pt-2 border-t border-slate-200">
                         <span>Total:</span>
-                        <span>{formatINR(calculateTotal())}</span>
+                        <span>{formatINR((calculateTotal() - formData.discount) * 1.05)}</span>
                       </div>
                     </div>
                   </div>
