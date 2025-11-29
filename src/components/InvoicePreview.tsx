@@ -226,7 +226,7 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoice, items, 
                 <span>Subtotal:</span>
                 <span>₹{invoice.subtotal.toFixed(2)}</span>
               </div>
-              {invoice.discount && invoice.discount > 0 && (
+              {invoice.discount && Number(invoice.discount) > 0 && (
                 <div style={{
                   display: 'flex',
                   justifyContent: 'space-between',
@@ -236,7 +236,7 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoice, items, 
                   color: '#10b981'
                 }}>
                   <span>Discount{invoice.discount_reason ? ` (${invoice.discount_reason})` : ''}:</span>
-                  <span>-₹{invoice.discount.toFixed(2)}</span>
+                  <span>-₹{Number(invoice.discount).toFixed(2)}</span>
                 </div>
               )}
               <div style={{
