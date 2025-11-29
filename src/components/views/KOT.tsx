@@ -49,6 +49,9 @@ export function KOT() {
   const [showInvoicePreview, setShowInvoicePreview] = useState(false);
   const [currentInvoice, setCurrentInvoice] = useState<any>(null);
   const [menuSearchQuery, setMenuSearchQuery] = useState('');
+  const [taxRate, setTaxRate] = useState(0.05);
+  const [taxName, setTaxName] = useState('GST');
+  const [enableTax, setEnableTax] = useState(true);
 
   const [formData, setFormData] = useState({
     order_type: 'dine_in' as 'dine_in' | 'delivery' | 'take_away',
@@ -70,7 +73,27 @@ export function KOT() {
   useEffect(() => {
     loadKOTs();
     loadMenuItems();
+    loadTaxConfig();
   }, []);
+
+  const loadTaxConfig = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('company_profile')
+        .select('default_tax_rate, tax_name, enable_tax')
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (data) {
+        setTaxRate((data.default_tax_rate || 5) / 100);
+        setTaxName(data.tax_name || 'GST');
+        setEnableTax(data.enable_tax !== false);
+      }
+    } catch (error) {
+      console.error('Error loading tax config:', error);
+    }
+  };
 
   const loadKOTs = async () => {
     try {
@@ -250,8 +273,7 @@ export function KOT() {
       const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
       const discount = parseFloat(formData.discount?.toString() || '0');
       const afterDiscount = subtotal - discount;
-      const taxRate = 0.05;
-      const tax = afterDiscount * taxRate;
+      const tax = enableTax ? afterDiscount * taxRate : 0;
       const total = afterDiscount + tax;
 
       // Calculate due date - default to current date for walk-in orders
@@ -293,9 +315,9 @@ export function KOT() {
         menu_item_name: item.menu_item_name || 'Menu Item',
         quantity: item.quantity,
         unit_price: item.unit_price,
-        tax_rate: 5,
-        tax_amount: item.quantity * item.unit_price * 0.05,
-        total: item.quantity * item.unit_price * 1.05,
+        tax_rate: enableTax ? taxRate * 100 : 0,
+        tax_amount: enableTax ? item.quantity * item.unit_price * taxRate : 0,
+        total: item.quantity * item.unit_price * (1 + (enableTax ? taxRate : 0)),
       }));
 
       const { error: itemsError } = await supabase.from('invoice_items').insert(invoiceItems);
@@ -381,8 +403,7 @@ export function KOT() {
       const subtotal = calculateTotal();
       const discount = parseFloat(formData.discount?.toString() || '0');
       const afterDiscount = subtotal - discount;
-      const taxRate = 0.05;
-      const tax = afterDiscount * taxRate;
+      const tax = enableTax ? afterDiscount * taxRate : 0;
       const total = afterDiscount + tax;
 
       await supabase
@@ -398,9 +419,9 @@ export function KOT() {
         menu_item_name: item.menu_item_name,
         quantity: item.quantity,
         unit_price: item.unit_price,
-        tax_rate: 5,
-        tax_amount: item.quantity * item.unit_price * 0.05,
-        total: item.quantity * item.unit_price * 1.05,
+        tax_rate: enableTax ? taxRate * 100 : 0,
+        tax_amount: enableTax ? item.quantity * item.unit_price * taxRate : 0,
+        total: item.quantity * item.unit_price * (1 + (enableTax ? taxRate : 0)),
       }));
 
       await supabase.from('invoice_items').insert(invoiceItems);
@@ -735,9 +756,8 @@ export function KOT() {
       const subtotal = items.reduce((sum: number, item: any) =>
         sum + (parseFloat(item.quantity) * parseFloat(item.unit_price)), 0
       );
-      const taxRate = 0.05;
       const subtotalAfterDiscount = subtotal - discount;
-      const tax = subtotalAfterDiscount * taxRate;
+      const tax = enableTax ? subtotalAfterDiscount * taxRate : 0;
       const total = subtotalAfterDiscount + tax;
 
       const formattedItems = items.map((item: any) => ({
@@ -1352,12 +1372,12 @@ export function KOT() {
                         </div>
                       )}
                       <div className="flex justify-between text-sm">
-                        <span className="text-slate-600">Tax (5%):</span>
-                        <span className="font-medium">{formatINR((calculateTotal() - formData.discount) * 0.05)}</span>
+                        <span className="text-slate-600">{taxName} ({(taxRate * 100).toFixed(2)}%):</span>
+                        <span className="font-medium">{formatINR(enableTax ? (calculateTotal() - formData.discount) * taxRate : 0)}</span>
                       </div>
                       <div className="flex justify-between text-lg font-bold pt-2 border-t border-slate-200">
                         <span>Total:</span>
-                        <span>{formatINR((calculateTotal() - formData.discount) * 1.05)}</span>
+                        <span>{formatINR((calculateTotal() - formData.discount) * (1 + (enableTax ? taxRate : 0)))}</span>
                       </div>
                     </div>
                   </div>

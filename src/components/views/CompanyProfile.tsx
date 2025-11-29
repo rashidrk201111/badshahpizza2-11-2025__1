@@ -24,6 +24,9 @@ interface CompanyProfileData {
   ifsc_code: string;
   terms_conditions: string;
   logo_url: string;
+  default_tax_rate: number;
+  tax_name: string;
+  enable_tax: boolean;
 }
 
 export function CompanyProfile() {
@@ -51,6 +54,9 @@ export function CompanyProfile() {
     ifsc_code: '',
     terms_conditions: 'Payment due within 30 days',
     logo_url: '',
+    default_tax_rate: 5.0,
+    tax_name: 'GST',
+    enable_tax: true,
   });
 
   useEffect(() => {
@@ -419,6 +425,66 @@ export function CompanyProfile() {
                 />
               </div>
             </div>
+          </div>
+
+          <div className="border-t border-slate-200 pt-6">
+            <h2 className="text-lg font-semibold text-slate-900 mb-4">Tax Configuration</h2>
+            <p className="text-sm text-slate-600 mb-4">
+              Configure default tax settings for all invoices and KOTs
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Enable Tax
+                </label>
+                <div className="flex items-center gap-3">
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={profile.enable_tax}
+                      onChange={(e) => setProfile({ ...profile, enable_tax: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                  </label>
+                  <span className="text-sm text-slate-600">
+                    {profile.enable_tax ? 'Enabled' : 'Disabled'}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Tax Name
+                </label>
+                <input
+                  type="text"
+                  value={profile.tax_name}
+                  onChange={(e) => handleChange('tax_name', e.target.value)}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  placeholder="GST, VAT, Sales Tax"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Tax Rate (%)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  value={profile.default_tax_rate}
+                  onChange={(e) => setProfile({ ...profile, default_tax_rate: parseFloat(e.target.value) || 0 })}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  placeholder="5.0"
+                />
+              </div>
+            </div>
+            <p className="mt-2 text-xs text-slate-500">
+              This tax rate will be applied to all KOTs and invoices. You can override it for individual transactions.
+            </p>
           </div>
 
           <div className="border-t border-slate-200 pt-6">
