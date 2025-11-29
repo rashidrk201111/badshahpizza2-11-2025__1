@@ -37,14 +37,23 @@ Deno.serve(async (req: Request) => {
       throw new Error('Unauthorized');
     }
 
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
 
-    if (profile?.role !== 'admin') {
-      throw new Error('Only admins can create employees');
+    if (profileError) {
+      console.error('Profile lookup error:', profileError);
+      throw new Error(`Profile lookup failed: ${profileError.message}`);
+    }
+
+    if (!profile) {
+      throw new Error('Profile not found for user');
+    }
+
+    if (profile.role !== 'admin') {
+      throw new Error(`Only admins can create employees. Your role: ${profile.role}`);
     }
 
     const { email, password, full_name, role, phone, is_active, created_by } = await req.json();
@@ -65,7 +74,7 @@ Deno.serve(async (req: Request) => {
 
     if (authError) throw authError;
 
-    const { error: profileError } = await supabase
+    const { error: profileError2 } = await supabase
       .from('profiles')
       .insert([{
         id: authData.user.id,
@@ -74,7 +83,7 @@ Deno.serve(async (req: Request) => {
         role,
       }]);
 
-    if (profileError) throw profileError;
+    if (profileError2) throw profileError2;
 
     const { error: employeeError } = await supabase
       .from('employees')
