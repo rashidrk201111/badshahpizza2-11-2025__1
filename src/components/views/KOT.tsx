@@ -500,13 +500,14 @@ export function KOT() {
             }
             .order-type-badge {
               display: inline-block;
-              padding: 8px 16px;
+              padding: 12px 24px;
               margin: 10px 0;
               border-radius: 4px;
-              font-weight: bold;
-              font-size: 16px;
+              font-weight: 600;
+              font-size: 24px;
               color: white;
               background-color: ${orderTypeColors[kot.order_type]};
+              letter-spacing: 2px;
             }
             .info {
               margin-bottom: 10px;
