@@ -37,23 +37,19 @@ Deno.serve(async (req: Request) => {
       throw new Error('Unauthorized');
     }
 
-    const { data: profile, error: profileError } = await supabaseAdmin
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .maybeSingle();
+    const { data: userRole, error: roleError } = await supabaseAdmin.rpc('get_user_role', { user_id: user.id });
 
-    if (profileError) {
-      console.error('Profile lookup error:', profileError);
-      throw new Error(`Profile lookup failed: ${profileError.message}`);
+    if (roleError) {
+      console.error('Role lookup error:', roleError);
+      throw new Error(`Failed to check user role: ${roleError.message}`);
     }
 
-    if (!profile) {
+    if (!userRole) {
       throw new Error('Profile not found for user');
     }
 
-    if (profile.role !== 'admin') {
-      throw new Error(`Only admins can create employees. Your role: ${profile.role}`);
+    if (userRole !== 'admin') {
+      throw new Error(`Only admins can create employees. Your role: ${userRole}`);
     }
 
     const { email, password, full_name, role, phone, is_active, created_by } = await req.json();
