@@ -480,102 +480,113 @@ export function KOT() {
               margin: 0;
               padding: 0;
               box-sizing: border-box;
+              font-weight: 900 !important;
             }
             body {
-              font-family: Arial, sans-serif;
+              font-family: Arial, Helvetica, sans-serif;
               width: 80mm;
               padding: 5mm;
-              font-size: 14px;
-              line-height: 1.4;
-              font-weight: 900;
+              font-size: 16px;
+              line-height: 1.5;
+              font-weight: 900 !important;
               -webkit-font-smoothing: antialiased;
               text-rendering: optimizeLegibility;
+              color: #000;
             }
             .header {
               text-align: center;
               margin-bottom: 10px;
               padding-bottom: 10px;
-              border-bottom: 2px solid #000;
+              border-bottom: 3px solid #000;
+            }
+            .kot-number {
+              font-size: 20px;
+              font-weight: 900 !important;
+              margin: 8px 0;
+              text-shadow: 1px 1px 0 #000;
+              letter-spacing: 2px;
             }
             .header h1 {
-              font-size: 26px;
-              margin-bottom: 5px;
-              font-weight: 900;
-              text-shadow: 0.5px 0.5px 0 #000;
-              letter-spacing: 1px;
+              font-size: 28px;
+              margin-bottom: 8px;
+              font-weight: 900 !important;
+              text-shadow: 1px 1px 0 #000, 0.5px 0.5px 0 #000;
+              letter-spacing: 2px;
             }
             .order-type-badge {
               display: inline-block;
-              padding: 12px 24px;
+              padding: 14px 28px;
               margin: 10px 0;
               border-radius: 4px;
-              font-weight: 900;
-              font-size: 26px;
+              font-weight: 900 !important;
+              font-size: 28px;
               color: white;
               background-color: ${orderTypeColors[kot.order_type]};
-              letter-spacing: 2px;
-              text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+              letter-spacing: 3px;
+              text-shadow: 2px 2px 3px rgba(0,0,0,0.7);
+              border: 3px solid #000;
             }
             .info {
               margin-bottom: 10px;
               padding-bottom: 10px;
-              border-bottom: 2px solid #000;
-              font-size: 15px;
-              font-weight: 900;
+              border-bottom: 3px solid #000;
+              font-size: 16px;
+              font-weight: 900 !important;
             }
             .info div {
               margin-bottom: 3px;
             }
             .info-label {
-              font-weight: 900;
+              font-weight: 900 !important;
               display: inline-block;
-              width: 80px;
-              text-shadow: 0.5px 0.5px 0 #000;
+              width: 90px;
+              text-shadow: 1px 1px 0 #333;
             }
             .items {
               margin-bottom: 10px;
               padding-bottom: 10px;
-              border-bottom: 1px dashed #000;
+              border-bottom: 3px solid #000;
             }
             .item {
-              margin-bottom: 10px;
-              padding: 8px;
-              background: #f0f0f0;
-              border: 2px solid #000;
-              border-left: 5px solid #000;
+              margin-bottom: 12px;
+              padding: 10px;
+              background: #e8e8e8;
+              border: 3px solid #000 !important;
+              border-left: 6px solid #000 !important;
             }
             .item-name {
-              font-weight: 900;
-              font-size: 18px;
-              margin-bottom: 3px;
-              text-shadow: 0.5px 0.5px 0 #000;
+              font-weight: 900 !important;
+              font-size: 20px;
+              margin-bottom: 5px;
+              text-shadow: 1px 1px 0 #333;
               text-transform: uppercase;
+              letter-spacing: 1px;
             }
             .item-qty {
-              font-size: 18px;
-              font-weight: 900;
-              text-shadow: 0.5px 0.5px 0 #000;
+              font-size: 20px;
+              font-weight: 900 !important;
+              text-shadow: 1px 1px 0 #333;
             }
             .item-notes {
               font-style: italic;
-              font-size: 14px;
-              margin-top: 3px;
+              font-size: 16px;
+              margin-top: 5px;
               color: #000;
-              font-weight: 900;
+              font-weight: 900 !important;
             }
             .footer {
               text-align: center;
               margin-top: 15px;
-              padding-top: 10px;
-              border-top: 2px solid #000;
-              font-size: 16px;
-              font-weight: 900;
+              padding-top: 12px;
+              border-top: 3px solid #000;
+              font-size: 18px;
+              font-weight: 900 !important;
             }
             .timestamp {
               text-align: center;
-              font-size: 13px;
+              font-size: 14px;
               margin-top: 10px;
-              font-weight: 900;
+              font-weight: 900 !important;
             }
             @media print {
               body {
@@ -593,7 +604,7 @@ export function KOT() {
         <body>
           <div class="header">
             <h1>KITCHEN ORDER TICKET</h1>
-            <div>${kot.kot_number}</div>
+            <div class="kot-number">${kot.kot_number}</div>
             <div class="order-type-badge">
               ${orderTypeIcons[kot.order_type]} ${orderTypeLabels[kot.order_type]}
             </div>
@@ -619,7 +630,7 @@ export function KOT() {
           </div>
 
           <div class="footer">
-            <div style="font-weight: 900; text-shadow: 0.5px 0.5px 0 #000;">Total Items: ${items.reduce((sum: number, item: any) => sum + parseFloat(item.quantity), 0)}</div>
+            <div style="font-weight: 900 !important; text-shadow: 1px 1px 0 #333; font-size: 20px;">TOTAL ITEMS: ${items.reduce((sum: number, item: any) => sum + parseFloat(item.quantity), 0)}</div>
           </div>
 
           <div class="timestamp">
