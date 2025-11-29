@@ -91,7 +91,11 @@ export function Purchases() {
           .select(`
             *,
             supplier:suppliers(name),
-            items:purchase_items(*)
+            items:purchase_items(*),
+            payments:purchase_payments(
+              *,
+              payment_method:payment_methods(name)
+            )
           `)
           .order('created_at', { ascending: false }),
         supabase
@@ -938,36 +942,78 @@ export function Purchases() {
                       {isExpanded && (purchase as any).items && (
                         <tr>
                           <td colSpan={activeTab === 'payables' ? 8 : 6} className="px-4 py-0 bg-slate-50">
-                            <div className="py-3">
-                              <h4 className="text-sm font-semibold text-slate-700 mb-2">Purchase Items</h4>
-                              <table className="w-full text-sm">
-                                <thead>
-                                  <tr className="border-b border-slate-300">
-                                    <th className="text-left py-2 px-2 text-xs font-medium text-slate-600">Product</th>
-                                    <th className="text-center py-2 px-2 text-xs font-medium text-slate-600">SKU</th>
-                                    <th className="text-center py-2 px-2 text-xs font-medium text-slate-600">Quantity</th>
-                                    <th className="text-right py-2 px-2 text-xs font-medium text-slate-600">Unit Price</th>
-                                    <th className="text-center py-2 px-2 text-xs font-medium text-slate-600">GST</th>
-                                    <th className="text-right py-2 px-2 text-xs font-medium text-slate-600">Total</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {((purchase as any).items || []).map((item: any, idx: number) => (
-                                    <tr key={idx} className="border-b border-slate-200">
-                                      <td className="py-2 px-2 text-slate-900">{item.product_name}</td>
-                                      <td className="py-2 px-2 text-center text-slate-600">{item.sku}</td>
-                                      <td className="py-2 px-2 text-center text-slate-900">
-                                        {item.quantity} {item.unit}
-                                      </td>
-                                      <td className="py-2 px-2 text-right text-slate-900">{formatINR(item.unit_price)}</td>
-                                      <td className="py-2 px-2 text-center text-slate-600">{item.gst_rate}%</td>
-                                      <td className="py-2 px-2 text-right font-medium text-slate-900">
-                                        {formatINR(item.total)}
-                                      </td>
+                            <div className="py-3 space-y-4">
+                              <div>
+                                <h4 className="text-sm font-semibold text-slate-700 mb-2">Purchase Items</h4>
+                                <table className="w-full text-sm">
+                                  <thead>
+                                    <tr className="border-b border-slate-300">
+                                      <th className="text-left py-2 px-2 text-xs font-medium text-slate-600">Product</th>
+                                      <th className="text-center py-2 px-2 text-xs font-medium text-slate-600">SKU</th>
+                                      <th className="text-center py-2 px-2 text-xs font-medium text-slate-600">Quantity</th>
+                                      <th className="text-right py-2 px-2 text-xs font-medium text-slate-600">Unit Price</th>
+                                      <th className="text-center py-2 px-2 text-xs font-medium text-slate-600">GST</th>
+                                      <th className="text-right py-2 px-2 text-xs font-medium text-slate-600">Total</th>
                                     </tr>
-                                  ))}
-                                </tbody>
-                              </table>
+                                  </thead>
+                                  <tbody>
+                                    {((purchase as any).items || []).map((item: any, idx: number) => (
+                                      <tr key={idx} className="border-b border-slate-200">
+                                        <td className="py-2 px-2 text-slate-900">{item.product_name}</td>
+                                        <td className="py-2 px-2 text-center text-slate-600">{item.sku}</td>
+                                        <td className="py-2 px-2 text-center text-slate-900">
+                                          {item.quantity} {item.unit}
+                                        </td>
+                                        <td className="py-2 px-2 text-right text-slate-900">{formatINR(item.unit_price)}</td>
+                                        <td className="py-2 px-2 text-center text-slate-600">{item.gst_rate}%</td>
+                                        <td className="py-2 px-2 text-right font-medium text-slate-900">
+                                          {formatINR(item.total)}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+
+                              {((purchase as any).payments || []).length > 0 && (
+                                <div>
+                                  <h4 className="text-sm font-semibold text-slate-700 mb-2">Payment History</h4>
+                                  <table className="w-full text-sm">
+                                    <thead>
+                                      <tr className="border-b border-slate-300">
+                                        <th className="text-left py-2 px-2 text-xs font-medium text-slate-600">Date</th>
+                                        <th className="text-left py-2 px-2 text-xs font-medium text-slate-600">Payment Method</th>
+                                        <th className="text-left py-2 px-2 text-xs font-medium text-slate-600">Reference</th>
+                                        <th className="text-right py-2 px-2 text-xs font-medium text-slate-600">Amount</th>
+                                        <th className="text-left py-2 px-2 text-xs font-medium text-slate-600">Notes</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {((purchase as any).payments || []).map((payment: any, idx: number) => (
+                                        <tr key={idx} className="border-b border-slate-200">
+                                          <td className="py-2 px-2 text-slate-900">
+                                            {new Date(payment.payment_date).toLocaleDateString('en-IN')}
+                                          </td>
+                                          <td className="py-2 px-2 text-slate-900">
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700">
+                                              {payment.payment_method?.name || 'N/A'}
+                                            </span>
+                                          </td>
+                                          <td className="py-2 px-2 text-slate-600">
+                                            {payment.reference_number || '-'}
+                                          </td>
+                                          <td className="py-2 px-2 text-right font-semibold text-green-600">
+                                            {formatINR(payment.amount)}
+                                          </td>
+                                          <td className="py-2 px-2 text-slate-600 text-xs">
+                                            {payment.notes || '-'}
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              )}
                             </div>
                           </td>
                         </tr>
