@@ -90,11 +90,13 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoice, items, 
             id="invoice-content"
             className="p-8 print:p-0"
             style={{
-              fontFamily: "'Courier New', monospace",
+              fontFamily: 'Arial, Helvetica, sans-serif',
               maxWidth: '80mm',
               margin: '0 auto',
-              fontSize: '12px',
-              lineHeight: '1.4'
+              fontSize: '14px',
+              lineHeight: '1.5',
+              fontWeight: '900',
+              color: '#000'
             }}
           >
             {/* Header */}
@@ -102,29 +104,32 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoice, items, 
               textAlign: 'center',
               marginBottom: '10px',
               paddingBottom: '10px',
-              borderBottom: '2px solid #000'
+              borderBottom: '3px solid #000'
             }}>
-              <h1 style={{ fontSize: '18px', marginBottom: '5px', fontWeight: 'bold' }}>
+              <h1 style={{ fontSize: '22px', marginBottom: '8px', fontWeight: '900', textShadow: '1px 1px 0 #333', letterSpacing: '1px' }}>
                 {companyProfile?.company_name || 'Restaurant'}
               </h1>
               {companyProfile && (
-                <div style={{ fontSize: '10px' }}>
+                <div style={{ fontSize: '12px', fontWeight: '900' }}>
                   {companyProfile.address_line1 && <div>{companyProfile.address_line1}</div>}
                   {companyProfile.phone && <div>Tel: {companyProfile.phone}</div>}
                   {companyProfile.gst_number && <div>GST: {companyProfile.gst_number}</div>}
                 </div>
               )}
-              <div style={{ fontSize: '16px', fontWeight: 'bold', marginTop: '8px' }}>ORDER RECEIPT</div>
+              <div style={{ fontSize: '20px', fontWeight: '900', marginTop: '8px', textShadow: '1px 1px 0 #333', letterSpacing: '2px' }}>ORDER RECEIPT</div>
               <div
                 style={{
                   display: 'inline-block',
-                  padding: '6px 12px',
+                  padding: '10px 20px',
                   margin: '8px 0',
                   borderRadius: '4px',
-                  fontWeight: 'bold',
-                  fontSize: '14px',
+                  fontWeight: '900',
+                  fontSize: '18px',
                   color: 'white',
-                  backgroundColor: orderTypeColors[invoice.order_type]
+                  backgroundColor: orderTypeColors[invoice.order_type],
+                  letterSpacing: '2px',
+                  textShadow: '2px 2px 3px rgba(0,0,0,0.7)',
+                  border: '3px solid #000'
                 }}
               >
                 {orderTypeLabels[invoice.order_type]}
@@ -135,64 +140,65 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoice, items, 
             <div style={{
               marginBottom: '10px',
               paddingBottom: '10px',
-              borderBottom: '1px dashed #000',
-              fontSize: '11px'
+              borderBottom: '3px solid #000',
+              fontSize: '14px',
+              fontWeight: '900'
             }}>
-              <div style={{ marginBottom: '3px' }}>
-                <span style={{ fontWeight: 'bold', display: 'inline-block', width: '80px' }}>Order:</span>
+              <div style={{ marginBottom: '5px' }}>
+                <span style={{ fontWeight: '900', display: 'inline-block', width: '90px', textShadow: '0.5px 0.5px 0 #333' }}>Order:</span>
                 {invoice.invoice_number || 'N/A'}
               </div>
-              <div style={{ marginBottom: '3px' }}>
-                <span style={{ fontWeight: 'bold', display: 'inline-block', width: '80px' }}>Date:</span>
+              <div style={{ marginBottom: '5px' }}>
+                <span style={{ fontWeight: '900', display: 'inline-block', width: '90px', textShadow: '0.5px 0.5px 0 #333' }}>Date:</span>
                 {new Date(invoice.created_at).toLocaleDateString('en-IN')}
               </div>
-              <div style={{ marginBottom: '3px' }}>
-                <span style={{ fontWeight: 'bold', display: 'inline-block', width: '80px' }}>Time:</span>
+              <div style={{ marginBottom: '5px' }}>
+                <span style={{ fontWeight: '900', display: 'inline-block', width: '90px', textShadow: '0.5px 0.5px 0 #333' }}>Time:</span>
                 {new Date(invoice.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
               </div>
               {invoice.order_type === 'dine_in' && invoice.table_number && (
-                <div style={{ marginBottom: '3px' }}>
-                  <span style={{ fontWeight: 'bold', display: 'inline-block', width: '80px' }}>Table:</span>
+                <div style={{ marginBottom: '5px' }}>
+                  <span style={{ fontWeight: '900', display: 'inline-block', width: '90px', textShadow: '0.5px 0.5px 0 #333' }}>Table:</span>
                   {invoice.table_number}
                 </div>
               )}
               {invoice.customer_name && (
-                <div style={{ marginBottom: '3px' }}>
-                  <span style={{ fontWeight: 'bold', display: 'inline-block', width: '80px' }}>Customer:</span>
+                <div style={{ marginBottom: '5px' }}>
+                  <span style={{ fontWeight: '900', display: 'inline-block', width: '90px', textShadow: '0.5px 0.5px 0 #333' }}>Customer:</span>
                   {invoice.customer_name}
                 </div>
               )}
               {invoice.customer_phone && (
-                <div style={{ marginBottom: '3px' }}>
-                  <span style={{ fontWeight: 'bold', display: 'inline-block', width: '80px' }}>Phone:</span>
+                <div style={{ marginBottom: '5px' }}>
+                  <span style={{ fontWeight: '900', display: 'inline-block', width: '90px', textShadow: '0.5px 0.5px 0 #333' }}>Phone:</span>
                   {invoice.customer_phone}
                 </div>
               )}
             </div>
 
             {/* Items Table */}
-            <table style={{ width: '100%', marginBottom: '10px', borderCollapse: 'collapse' }}>
+            <table style={{ width: '100%', marginBottom: '10px', borderCollapse: 'collapse', fontWeight: '900' }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid #000' }}>
-                  <th style={{ textAlign: 'left', padding: '5px 0', fontSize: '11px' }}>Item</th>
-                  <th style={{ textAlign: 'center', padding: '5px 0', fontSize: '11px', width: '30px' }}>Qty</th>
-                  <th style={{ textAlign: 'right', padding: '5px 0', fontSize: '11px', width: '60px' }}>Price</th>
-                  <th style={{ textAlign: 'right', padding: '5px 0', fontSize: '11px', width: '60px' }}>Total</th>
+                <tr style={{ borderBottom: '3px solid #000' }}>
+                  <th style={{ textAlign: 'left', padding: '8px 0', fontSize: '14px', fontWeight: '900', textShadow: '0.5px 0.5px 0 #333' }}>Item</th>
+                  <th style={{ textAlign: 'center', padding: '8px 0', fontSize: '14px', width: '40px', fontWeight: '900', textShadow: '0.5px 0.5px 0 #333' }}>Qty</th>
+                  <th style={{ textAlign: 'right', padding: '8px 0', fontSize: '14px', width: '70px', fontWeight: '900', textShadow: '0.5px 0.5px 0 #333' }}>Price</th>
+                  <th style={{ textAlign: 'right', padding: '8px 0', fontSize: '14px', width: '70px', fontWeight: '900', textShadow: '0.5px 0.5px 0 #333' }}>Total</th>
                 </tr>
               </thead>
               <tbody>
                 {items.map((item, index) => (
-                  <tr key={index} style={{ borderBottom: '1px dashed #ddd' }}>
-                    <td style={{ padding: '5px 0', fontSize: '11px', fontWeight: 'bold' }}>
+                  <tr key={index} style={{ borderBottom: '2px solid #ddd' }}>
+                    <td style={{ padding: '8px 0', fontSize: '14px', fontWeight: '900', textTransform: 'uppercase' }}>
                       {item.menu_item_name}
                     </td>
-                    <td style={{ padding: '5px 0', fontSize: '11px', textAlign: 'center' }}>
+                    <td style={{ padding: '8px 0', fontSize: '15px', textAlign: 'center', fontWeight: '900' }}>
                       {item.quantity}
                     </td>
-                    <td style={{ padding: '5px 0', fontSize: '11px', textAlign: 'right' }}>
+                    <td style={{ padding: '8px 0', fontSize: '14px', textAlign: 'right', fontWeight: '900' }}>
                       ₹{parseFloat(String(item.unit_price)).toFixed(2)}
                     </td>
-                    <td style={{ padding: '5px 0', fontSize: '11px', textAlign: 'right' }}>
+                    <td style={{ padding: '8px 0', fontSize: '14px', textAlign: 'right', fontWeight: '900' }}>
                       ₹{(parseFloat(String(item.quantity)) * parseFloat(String(item.unit_price))).toFixed(2)}
                     </td>
                   </tr>
@@ -204,13 +210,15 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoice, items, 
             <div style={{
               marginTop: '10px',
               paddingTop: '10px',
-              borderTop: '1px solid #000'
+              borderTop: '3px solid #000',
+              fontWeight: '900'
             }}>
               <div style={{
                 display: 'flex',
                 justifyContent: 'space-between',
-                marginBottom: '5px',
-                fontSize: '11px'
+                marginBottom: '8px',
+                fontSize: '15px',
+                fontWeight: '900'
               }}>
                 <span>Subtotal:</span>
                 <span>₹{invoice.subtotal.toFixed(2)}</span>
@@ -218,8 +226,9 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoice, items, 
               <div style={{
                 display: 'flex',
                 justifyContent: 'space-between',
-                marginBottom: '5px',
-                fontSize: '11px'
+                marginBottom: '8px',
+                fontSize: '15px',
+                fontWeight: '900'
               }}>
                 <span>Tax (5%):</span>
                 <span>₹{invoice.tax.toFixed(2)}</span>
@@ -227,10 +236,11 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoice, items, 
               <div style={{
                 display: 'flex',
                 justifyContent: 'space-between',
-                fontSize: '14px',
-                fontWeight: 'bold',
-                paddingTop: '5px',
-                borderTop: '2px solid #000'
+                fontSize: '18px',
+                fontWeight: '900',
+                paddingTop: '8px',
+                borderTop: '3px solid #000',
+                textShadow: '1px 1px 0 #333'
               }}>
                 <span>TOTAL:</span>
                 <span>₹{invoice.total.toFixed(2)}</span>
@@ -242,10 +252,11 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoice, items, 
               textAlign: 'center',
               marginTop: '15px',
               paddingTop: '10px',
-              borderTop: '1px dashed #000',
-              fontSize: '11px'
+              borderTop: '3px solid #000',
+              fontSize: '14px',
+              fontWeight: '900'
             }}>
-              <div style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '5px' }}>Thank You!</div>
+              <div style={{ fontWeight: '900', fontSize: '18px', marginBottom: '8px', textShadow: '0.5px 0.5px 0 #333' }}>Thank You!</div>
               <div>Please visit again</div>
               {companyProfile?.website && <div>{companyProfile.website}</div>}
             </div>
@@ -253,9 +264,10 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoice, items, 
             {/* Timestamp */}
             <div style={{
               textAlign: 'center',
-              fontSize: '10px',
+              fontSize: '12px',
               marginTop: '10px',
-              color: '#666'
+              color: '#000',
+              fontWeight: '900'
             }}>
               Printed: {new Date().toLocaleString('en-IN')}
             </div>
