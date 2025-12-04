@@ -31,7 +31,7 @@ interface ExpenseCategory {
 }
 
 export function Accounting() {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [expenseCategories, setExpenseCategories] = useState<ExpenseCategory[]>([]);
@@ -93,6 +93,22 @@ export function Accounting() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!profile || !['admin', 'accountant'].includes(profile.role)) {
+      alert('Only admin and accountant roles can add transactions');
+      return;
+    }
+
+    if (!formData.category) {
+      alert('Please select a category');
+      return;
+    }
+
+    if (!formData.amount || parseFloat(formData.amount) <= 0) {
+      alert('Please enter a valid amount');
+      return;
+    }
+
     try {
       const transactionData = {
         type: formData.type,
@@ -102,7 +118,7 @@ export function Accounting() {
         transaction_date: formData.transaction_date,
         payment_method_id: formData.payment_method_id || null,
         reference_number: formData.reference_number || null,
-        created_by: profile?.id,
+        created_by: user?.id,
       };
 
       if (editingTransaction) {
@@ -110,12 +126,18 @@ export function Accounting() {
           .from('transactions')
           .update(transactionData)
           .eq('id', editingTransaction.id);
-        if (error) throw error;
+        if (error) {
+          console.error('Update error:', error);
+          throw error;
+        }
       } else {
         const { error } = await supabase
           .from('transactions')
           .insert([transactionData]);
-        if (error) throw error;
+        if (error) {
+          console.error('Insert error:', error);
+          throw error;
+        }
       }
 
       setShowModal(false);
@@ -130,9 +152,10 @@ export function Accounting() {
         reference_number: '',
       });
       loadData();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving transaction:', error);
-      alert('Error saving transaction');
+      const errorMessage = error?.message || 'Error saving transaction';
+      alert(`Failed to save transaction: ${errorMessage}`);
     }
   };
 
@@ -196,6 +219,20 @@ export function Accounting() {
 
   if (loading) {
     return <div className="text-center py-8">Loading accounting data...</div>;
+  }
+
+  if (!profile || !['admin', 'accountant'].includes(profile.role)) {
+    return (
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center">
+        <div className="text-yellow-800 font-semibold text-xl mb-2">Access Restricted</div>
+        <p className="text-yellow-700">
+          Only users with 'Admin' or 'Accountant' roles can access the accounting section.
+        </p>
+        <p className="text-yellow-600 text-sm mt-2">
+          Please contact your administrator to change your role if you need access.
+        </p>
+      </div>
+    );
   }
 
   return (
