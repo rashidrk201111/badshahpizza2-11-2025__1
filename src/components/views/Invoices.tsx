@@ -306,6 +306,8 @@ export function Invoices() {
       const invoice = invoiceRes.data;
       const profile = profileRes.data;
       const { customer, items } = invoice;
+      const taxName = profile?.tax_name || 'GST';
+      const taxRate = profile?.default_tax_rate || 5;
 
       const printContent = format === 'full' ? `
         <!DOCTYPE html>
@@ -472,66 +474,100 @@ export function Invoices() {
             <style>
               @page { size: 80mm auto; margin: 5mm; }
               * { margin: 0; padding: 0; box-sizing: border-box; }
-              body { font-family: Arial, sans-serif; width: 80mm; padding: 10px; font-size: 12px; }
-              .center { text-align: center; }
-              .bold { font-weight: bold; }
-              .line { border-top: 1px dashed #000; margin: 10px 0; }
-              table { width: 100%; border-collapse: collapse; margin: 10px 0; }
-              th { text-align: left; border-bottom: 1px solid #000; padding: 5px 0; }
-              td { padding: 3px 0; }
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                width: 80mm;
+                padding: 10px;
+                font-size: 13px;
+                line-height: 1.6;
+                font-weight: 700;
+                color: #000;
+                -webkit-font-smoothing: antialiased;
+              }
             </style>
           </head>
           <body>
-            <div class="center bold" style="font-size: 18px; margin-bottom: 5px;">${profile?.company_name || 'Company'}</div>
-            ${profile?.address_line1 ? `<div class="center" style="font-size: 11px;">${profile.address_line1}</div>` : ''}
-            ${profile?.phone ? `<div class="center" style="font-size: 11px;">Tel: ${profile.phone}</div>` : ''}
-            ${profile?.gst_number ? `<div class="center" style="font-size: 11px;">GST: ${profile.gst_number}</div>` : ''}
+            <!-- Header -->
+            <div style="text-align: center; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 3px solid #000;">
+              <h1 style="font-size: 20px; margin-bottom: 8px; font-weight: 800; letter-spacing: 0.5px;">
+                ${profile?.company_name || 'Company'}
+              </h1>
+              ${profile?.address_line1 ? `<div style="font-size: 11px; font-weight: 700; line-height: 1.5;">${profile.address_line1}</div>` : ''}
+              ${profile?.phone ? `<div style="font-size: 11px; font-weight: 700; line-height: 1.5;">Tel: ${profile.phone}</div>` : ''}
+              ${profile?.gst_number ? `<div style="font-size: 11px; font-weight: 700; line-height: 1.5;">GST: ${profile.gst_number}</div>` : ''}
+              <div style="font-size: 18px; font-weight: 800; margin-top: 8px; letter-spacing: 1px;">INVOICE</div>
+            </div>
 
-            <div class="line"></div>
-            <div class="center bold" style="font-size: 16px;">INVOICE</div>
-            <div class="center">No: ${invoice.invoice_number}</div>
-            <div class="center">Date: ${new Date(invoice.created_at).toLocaleDateString('en-IN')}</div>
-            <div class="line"></div>
+            <!-- Invoice Info -->
+            <div style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #ddd; font-size: 12px; font-weight: 700;">
+              <div style="margin-bottom: 5px;">
+                <span style="font-weight: 700; display: inline-block; width: 90px;">Invoice:</span>
+                ${invoice.invoice_number}
+              </div>
+              <div style="margin-bottom: 5px;">
+                <span style="font-weight: 700; display: inline-block; width: 90px;">Date:</span>
+                ${new Date(invoice.created_at).toLocaleDateString('en-IN')}
+              </div>
+              <div style="margin-bottom: 5px;">
+                <span style="font-weight: 700; display: inline-block; width: 90px;">Time:</span>
+                ${new Date(invoice.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+              </div>
+              ${customer?.name ? `
+                <div style="margin-bottom: 5px;">
+                  <span style="font-weight: 700; display: inline-block; width: 90px;">Customer:</span>
+                  ${customer.name}
+                </div>
+              ` : ''}
+              ${customer?.phone ? `
+                <div style="margin-bottom: 5px;">
+                  <span style="font-weight: 700; display: inline-block; width: 90px;">Phone:</span>
+                  ${customer.phone}
+                </div>
+              ` : ''}
+            </div>
 
-            <div class="bold">Customer: ${customer?.name || ''}</div>
-            ${customer?.phone ? `<div>Ph: ${customer.phone}</div>` : ''}
-            <div class="line"></div>
-
-            <table>
+            <!-- Items Table -->
+            <table style="width: 100%; margin-bottom: 10px; border-collapse: collapse; font-weight: 700;">
               <thead>
-                <tr>
-                  <th>Item</th>
-                  <th style="text-align: center;">Qty</th>
-                  <th style="text-align: right;">Amt</th>
+                <tr style="border-bottom: 1px solid #000;">
+                  <th style="text-align: left; padding: 6px 0; font-size: 12px; font-weight: 700;">Item</th>
+                  <th style="text-align: center; padding: 6px 0; font-size: 12px; width: 40px; font-weight: 700;">Qty</th>
+                  <th style="text-align: right; padding: 6px 0; font-size: 12px; width: 70px; font-weight: 700;">Price</th>
+                  <th style="text-align: right; padding: 6px 0; font-size: 12px; width: 70px; font-weight: 700;">Total</th>
                 </tr>
               </thead>
               <tbody>
                 ${items.map((item: any) => `
-                  <tr>
-                    <td>${item.product?.name || ''}</td>
-                    <td style="text-align: center;">${item.quantity}</td>
-                    <td style="text-align: right;">₹${item.total.toFixed(2)}</td>
+                  <tr style="border-bottom: 1px dashed #ddd;">
+                    <td style="padding: 6px 0; font-size: 13px; font-weight: 700;">${item.product?.name || 'Item'}</td>
+                    <td style="padding: 6px 0; font-size: 13px; text-align: center; font-weight: 700;">${item.quantity}</td>
+                    <td style="padding: 6px 0; font-size: 13px; text-align: right; font-weight: 700;">₹${item.unit_price.toFixed(2)}</td>
+                    <td style="padding: 6px 0; font-size: 13px; text-align: right; font-weight: 700;">₹${item.total.toFixed(2)}</td>
                   </tr>
                 `).join('')}
               </tbody>
             </table>
 
-            <div class="line"></div>
-            <div style="display: flex; justify-content: space-between;">
-              <span>Subtotal:</span>
-              <span>₹${invoice.subtotal.toFixed(2)}</span>
+            <!-- Totals -->
+            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #000; font-weight: 700;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; font-weight: 700;">
+                <span>Subtotal:</span>
+                <span>₹${invoice.subtotal.toFixed(2)}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; font-weight: 700;">
+                <span>${taxName} (${taxRate}%):</span>
+                <span>₹${invoice.tax.toFixed(2)}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 16px; font-weight: 800; padding-top: 8px; border-top: 2px double #000;">
+                <span>TOTAL:</span>
+                <span>₹${invoice.total.toFixed(2)}</span>
+              </div>
             </div>
-            <div style="display: flex; justify-content: space-between;">
-              <span>Tax:</span>
-              <span>₹${invoice.tax.toFixed(2)}</span>
+
+            <!-- Footer -->
+            <div style="text-align: center; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #000; font-size: 14px; font-weight: 700;">
+              Thank you!
             </div>
-            <div class="line"></div>
-            <div style="display: flex; justify-content: space-between;" class="bold">
-              <span>TOTAL:</span>
-              <span style="font-size: 16px;">₹${invoice.total.toFixed(2)}</span>
-            </div>
-            <div class="line"></div>
-            <div class="center">Thank you!</div>
           </body>
         </html>
       `;
