@@ -418,6 +418,12 @@ export function Invoices() {
                   <span>Subtotal</span>
                   <span style="font-weight: 600;">₹${invoice.subtotal.toFixed(2)}</span>
                 </div>
+                ${Number(invoice.discount || 0) > 0 ? `
+                  <div class="totals-row" style="color: #10b981;">
+                    <span>Discount${invoice.discount_reason ? ` (${invoice.discount_reason})` : ''}</span>
+                    <span style="font-weight: 600;">-₹${Number(invoice.discount).toFixed(2)}</span>
+                  </div>
+                ` : ''}
                 ${invoice.is_interstate ? `
                   <div class="totals-row">
                     <span>IGST</span>
@@ -554,6 +560,12 @@ export function Invoices() {
                 <span>Subtotal:</span>
                 <span>₹${invoice.subtotal.toFixed(2)}</span>
               </div>
+              ${Number(invoice.discount || 0) > 0 ? `
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; font-weight: 700; color: #10b981;">
+                <span>Discount${invoice.discount_reason ? ` (${invoice.discount_reason})` : ''}:</span>
+                <span>-₹${Number(invoice.discount).toFixed(2)}</span>
+              </div>
+              ` : ''}
               <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; font-weight: 700;">
                 <span>${taxName} (${taxRate}%):</span>
                 <span>₹${invoice.tax.toFixed(2)}</span>

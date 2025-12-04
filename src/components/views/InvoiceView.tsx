@@ -323,6 +323,19 @@ export function InvoiceView({ invoiceId, onClose }: InvoiceViewProps) {
                 <span>Subtotal:</span>
                 <span>₹{invoiceData.subtotal.toFixed(2)}</span>
               </div>
+              {Number(invoiceData.discount || 0) > 0 && (
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  marginBottom: '8px',
+                  fontSize: '13px',
+                  fontWeight: '700',
+                  color: '#10b981'
+                }}>
+                  <span>Discount{invoiceData.discount_reason ? ` (${invoiceData.discount_reason})` : ''}:</span>
+                  <span>-₹{Number(invoiceData.discount).toFixed(2)}</span>
+                </div>
+              )}
               {invoiceData.tax > 0 && (
                 <div style={{
                   display: 'flex',
