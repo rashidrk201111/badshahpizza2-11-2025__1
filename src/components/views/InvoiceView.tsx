@@ -26,6 +26,8 @@ interface CompanyProfile {
   ifsc_code: string;
   terms_conditions: string;
   logo_url: string;
+  tax_name?: string;
+  default_tax_rate?: number;
 }
 
 export function InvoiceView({ invoiceId, onClose }: InvoiceViewProps) {
@@ -44,7 +46,7 @@ export function InvoiceView({ invoiceId, onClose }: InvoiceViewProps) {
       @media print {
         @page {
           size: 80mm auto;
-          margin: 0;
+          margin: 5mm;
         }
         body * {
           visibility: hidden;
@@ -57,8 +59,11 @@ export function InvoiceView({ invoiceId, onClose }: InvoiceViewProps) {
           left: 0;
           top: 0;
           width: 80mm;
-          padding: 10px;
+          padding: 0;
           margin: 0;
+          font-weight: 700;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
         }
         .print\\:hidden {
           display: none !important;
@@ -67,31 +72,8 @@ export function InvoiceView({ invoiceId, onClose }: InvoiceViewProps) {
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
           color-adjust: exact !important;
-          border-width: 1px !important;
-          border-color: #000 !important;
-          box-shadow: inset 0 0 0 1px #000 !important;
-        }
-        #invoice-content table thead th {
-          border: 1px solid #000 !important;
-          box-shadow: inset 0 0 0 1px #000 !important;
-        }
-        #invoice-content table tbody td {
-          border: 1px solid #000 !important;
-          box-shadow: inset 0 0 0 1px #000 !important;
         }
         ${printFormat === 'thermal' ? `
-          #invoice-content {
-            font-size: 11px !important;
-          }
-          #invoice-content h1 {
-            font-size: 16px !important;
-          }
-          #invoice-content h2 {
-            font-size: 14px !important;
-          }
-          #invoice-content h3 {
-            font-size: 12px !important;
-          }
           @page {
             size: 80mm auto;
             margin: 5mm;
@@ -99,7 +81,7 @@ export function InvoiceView({ invoiceId, onClose }: InvoiceViewProps) {
         ` : `
           @page {
             size: A4;
-            margin: 0;
+            margin: 20mm;
           }
         `}
       }
@@ -160,6 +142,8 @@ export function InvoiceView({ invoiceId, onClose }: InvoiceViewProps) {
   }
 
   const { customer, items } = invoiceData;
+  const taxName = companyProfile?.tax_name || 'GST';
+  const taxRate = companyProfile?.default_tax_rate || 5;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 overflow-y-auto">
@@ -214,84 +198,167 @@ export function InvoiceView({ invoiceId, onClose }: InvoiceViewProps) {
         </div>
 
         <div className="overflow-auto max-h-[70vh] print:max-h-none print:overflow-visible">
-          <div id="invoice-content" className="bg-white">
-            <div className="p-4 max-w-[80mm] mx-auto">
-                <div className="text-center mb-4">
-                  {companyProfile?.logo_url && (
-                    <div className="flex justify-center mb-2">
-                      <img
-                        src={companyProfile.logo_url}
-                        alt="Company Logo"
-                        className="h-16 w-16 object-contain"
-                      />
-                    </div>
-                  )}
-                  <h1 className="text-2xl font-bold mb-1">
-                    {companyProfile?.company_name || 'Company Name'}
-                  </h1>
-                  {companyProfile && (
-                    <div className="text-xs text-slate-600">
-                      {companyProfile.address_line1 && <p>{companyProfile.address_line1}</p>}
-                      {companyProfile.phone && <p>Tel: {companyProfile.phone}</p>}
-                      {companyProfile.gst_number && <p>GST: {companyProfile.gst_number}</p>}
-                    </div>
-                  )}
+          <div
+            id="invoice-content"
+            className="p-8 print:p-0 bg-white"
+            style={{
+              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+              maxWidth: '80mm',
+              margin: '0 auto',
+              fontSize: '13px',
+              lineHeight: '1.6',
+              fontWeight: '700',
+              color: '#000',
+              WebkitFontSmoothing: 'antialiased',
+              MozOsxFontSmoothing: 'grayscale'
+            }}
+          >
+            {/* Header */}
+            <div style={{
+              textAlign: 'center',
+              marginBottom: '10px',
+              paddingBottom: '10px',
+              borderBottom: '3px solid #000'
+            }}>
+              {companyProfile?.logo_url && (
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
+                  <img
+                    src={companyProfile.logo_url}
+                    alt="Company Logo"
+                    style={{ height: '48px', width: '48px', objectFit: 'contain' }}
+                  />
                 </div>
-
-                <div className="border-t border-b border-dashed border-slate-400 py-2 mb-2">
-                  <div className="text-center font-bold text-lg">INVOICE</div>
-                  <div className="text-xs">
-                    <p>Invoice: #{invoiceData.invoice_number}</p>
-                    <p>Date: {new Date(invoiceData.created_at).toLocaleDateString('en-IN')}</p>
-                  </div>
+              )}
+              <h1 style={{ fontSize: '20px', marginBottom: '8px', fontWeight: '800', letterSpacing: '0.5px' }}>
+                {companyProfile?.company_name || 'Company Name'}
+              </h1>
+              {companyProfile && (
+                <div style={{ fontSize: '11px', fontWeight: '700', lineHeight: '1.5' }}>
+                  {companyProfile.address_line1 && <div>{companyProfile.address_line1}</div>}
+                  {companyProfile.phone && <div>Tel: {companyProfile.phone}</div>}
+                  {companyProfile.gst_number && <div>GST: {companyProfile.gst_number}</div>}
                 </div>
+              )}
+              <div style={{ fontSize: '18px', fontWeight: '800', marginTop: '8px', letterSpacing: '1px' }}>INVOICE</div>
+            </div>
 
-                <div className="text-xs mb-2">
-                  <p className="font-bold mb-1">Customer:</p>
-                  <p className="font-semibold">{customer?.name}</p>
-                  {customer?.phone && <p>{customer.phone}</p>}
-                </div>
-
-                <table className="w-full text-xs mb-2">
-                  <thead>
-                    <tr className="border-b border-slate-400">
-                      <th className="text-left py-1">Item</th>
-                      <th className="text-center py-1">Qty</th>
-                      <th className="text-right py-1">Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {items.map((item: any) => (
-                      <tr key={item.id} className="border-b border-dashed border-slate-300">
-                        <td className="py-1">{item.menu_item_name || item.product_name || item.product?.description || item.product?.name || 'N/A'}</td>
-                        <td className="text-center py-1">{item.quantity}</td>
-                        <td className="text-right py-1">{formatINR(item.total)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-
-                <div className="text-xs space-y-1 mb-2">
-                  <div className="flex justify-between">
-                    <span>Subtotal:</span>
-                    <span>{formatINR(invoiceData.subtotal)}</span>
-                  </div>
-                  {invoiceData.tax > 0 && (
-                    <div className="flex justify-between">
-                      <span>Tax:</span>
-                      <span>{formatINR(invoiceData.tax)}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between font-bold text-sm border-t border-slate-400 pt-1">
-                    <span>TOTAL:</span>
-                    <span>{formatINR(invoiceData.total)}</span>
-                  </div>
-                </div>
-
-                <div className="text-center text-xs border-t border-dashed border-slate-400 pt-2">
-                  <p className="font-medium">Thank you!</p>
-                </div>
+            {/* Invoice Info */}
+            <div style={{
+              marginBottom: '10px',
+              paddingBottom: '10px',
+              borderBottom: '1px solid #ddd',
+              fontSize: '12px',
+              fontWeight: '700'
+            }}>
+              <div style={{ marginBottom: '5px' }}>
+                <span style={{ fontWeight: '700', display: 'inline-block', width: '90px' }}>Invoice:</span>
+                {invoiceData.invoice_number || 'N/A'}
               </div>
+              <div style={{ marginBottom: '5px' }}>
+                <span style={{ fontWeight: '700', display: 'inline-block', width: '90px' }}>Date:</span>
+                {new Date(invoiceData.created_at).toLocaleDateString('en-IN')}
+              </div>
+              <div style={{ marginBottom: '5px' }}>
+                <span style={{ fontWeight: '700', display: 'inline-block', width: '90px' }}>Time:</span>
+                {new Date(invoiceData.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+              </div>
+              {customer?.name && (
+                <div style={{ marginBottom: '5px' }}>
+                  <span style={{ fontWeight: '700', display: 'inline-block', width: '90px' }}>Customer:</span>
+                  {customer.name}
+                </div>
+              )}
+              {customer?.phone && (
+                <div style={{ marginBottom: '5px' }}>
+                  <span style={{ fontWeight: '700', display: 'inline-block', width: '90px' }}>Phone:</span>
+                  {customer.phone}
+                </div>
+              )}
+            </div>
+
+            {/* Items Table */}
+            <table style={{ width: '100%', marginBottom: '10px', borderCollapse: 'collapse', fontWeight: '700' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid #000' }}>
+                  <th style={{ textAlign: 'left', padding: '6px 0', fontSize: '12px', fontWeight: '700' }}>Item</th>
+                  <th style={{ textAlign: 'center', padding: '6px 0', fontSize: '12px', width: '40px', fontWeight: '700' }}>Qty</th>
+                  <th style={{ textAlign: 'right', padding: '6px 0', fontSize: '12px', width: '70px', fontWeight: '700' }}>Price</th>
+                  <th style={{ textAlign: 'right', padding: '6px 0', fontSize: '12px', width: '70px', fontWeight: '700' }}>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((item: any, index: number) => (
+                  <tr key={index} style={{ borderBottom: '1px dashed #ddd' }}>
+                    <td style={{ padding: '6px 0', fontSize: '13px', fontWeight: '700' }}>
+                      {item.menu_item_name || item.product_name || item.product?.description || item.product?.name || 'N/A'}
+                    </td>
+                    <td style={{ padding: '6px 0', fontSize: '13px', textAlign: 'center', fontWeight: '700' }}>
+                      {item.quantity}
+                    </td>
+                    <td style={{ padding: '6px 0', fontSize: '13px', textAlign: 'right', fontWeight: '700' }}>
+                      ₹{parseFloat(String(item.unit_price || 0)).toFixed(2)}
+                    </td>
+                    <td style={{ padding: '6px 0', fontSize: '13px', textAlign: 'right', fontWeight: '700' }}>
+                      ₹{parseFloat(String(item.total || 0)).toFixed(2)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* Totals */}
+            <div style={{
+              marginTop: '10px',
+              paddingTop: '10px',
+              borderTop: '1px solid #000',
+              fontWeight: '700'
+            }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                marginBottom: '8px',
+                fontSize: '13px',
+                fontWeight: '700'
+              }}>
+                <span>Subtotal:</span>
+                <span>₹{invoiceData.subtotal.toFixed(2)}</span>
+              </div>
+              {invoiceData.tax > 0 && (
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  marginBottom: '8px',
+                  fontSize: '13px',
+                  fontWeight: '700'
+                }}>
+                  <span>{taxName} ({taxRate}%):</span>
+                  <span>₹{invoiceData.tax.toFixed(2)}</span>
+                </div>
+              )}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                fontSize: '16px',
+                fontWeight: '800',
+                paddingTop: '8px',
+                borderTop: '2px double #000'
+              }}>
+                <span>TOTAL:</span>
+                <span>₹{invoiceData.total.toFixed(2)}</span>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div style={{
+              textAlign: 'center',
+              marginTop: '15px',
+              paddingTop: '15px',
+              borderTop: '1px dashed #000',
+              fontSize: '14px',
+              fontWeight: '700'
+            }}>
+              Thank you!
+            </div>
           </div>
         </div>
       </div>
